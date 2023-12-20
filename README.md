@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/gerlero/PCHIPInterpolation.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/gerlero/PCHIPInterpolation.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/gerlero/PCHIPInterpolation.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/gerlero/PCHIPInterpolation.jl)
 [![PkgEval](https://JuliaCI.github.io/NanosoldierReports/pkgeval_badges/P/PCHIPInterpolation.svg)](https://JuliaCI.github.io/NanosoldierReports/pkgeval_badges/P/PCHIPInterpolation.html)
+[![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
 PCHIP (Piecewise Cubic Hermite Interpolating Polynomial) spline interpolation of arbitrarily spaced one-dimensional data in Julia. This package is a fork of [SimplePCHIP](https://github.com/slabanja/SimplePCHIP) with some extra features.
 

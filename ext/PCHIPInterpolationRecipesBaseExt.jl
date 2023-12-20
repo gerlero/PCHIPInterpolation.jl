@@ -3,11 +3,11 @@ module PCHIPInterpolationRecipesBaseExt
 using PCHIPInterpolation
 using RecipesBase
 
-@recipe function _(itp::Interpolator; markershape=:none) \
+@recipe function _(itp::Interpolator; markershape = :none)
     @series begin
         markershape := :none
-        plotdensity = clamp(10*length(itp.xs), 1000, 100000)
-        x = range(first(itp.xs), last(itp.xs), length=plotdensity)
+        plotdensity = clamp(10 * length(itp.xs), 1000, 100000)
+        x = range(first(itp.xs), last(itp.xs), length = plotdensity)
         return x, itp.(x)
     end
     if markershape !== :none
