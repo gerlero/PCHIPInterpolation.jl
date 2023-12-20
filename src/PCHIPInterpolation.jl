@@ -3,11 +3,12 @@ module PCHIPInterpolation
 export Interpolator, integrate
 
 
-_is_strictly_increasing(xs::AbstractVector) = all(a < b for (a,b) in zip(xs[begin:end-1], xs[begin+1:end]))
+_is_strictly_increasing(xs::AbstractVector) =
+    all(a < b for (a, b) in zip(xs[begin:end-1], xs[begin+1:end]))
 _is_strictly_increasing(xs::AbstractRange) = step(xs) > 0
 
 function _pchip_edge_derivative(h1, h2, Δ1, Δ2)
-    d = ((2h1 + h2)*Δ1 - h2*Δ2)/(h1 + h2)
+    d = ((2h1 + h2) * Δ1 - h2 * Δ2) / (h1 + h2)
     if sign(d) != sign(Δ1)
         d = zero(d)
     elseif sign(Δ1) != sign(Δ2) && abs(d) > abs(3Δ1)
@@ -18,9 +19,9 @@ end
 
 function _pchip_ds_scipy(xs::AbstractVector, ys::AbstractVector)
     h(i) = xs[i+1] - xs[i]
-    Δ(i) = (ys[i+1] - ys[i])/h(i)
+    Δ(i) = (ys[i+1] - ys[i]) / h(i)
 
-    ds = similar(ys./xs)
+    ds = similar(ys ./ xs)
 
     is = eachindex(xs, ys, ds)
 
@@ -37,13 +38,23 @@ function _pchip_ds_scipy(xs::AbstractVector, ys::AbstractVector)
             else
                 wl = 2hr + hl
                 wr = hr + 2hl
-                ds[i] = (wl + wr)/(wl/Δl + wr/Δr)
+                ds[i] = (wl + wr) / (wl / Δl + wr / Δr)
             end
             Δl = Δr
             hl = hr
         end
-        ds[begin] = _pchip_edge_derivative(h(first(is)), h(first(is)+1), Δ(first(is)), Δ(first(is)+1))
-        ds[end] = _pchip_edge_derivative(h(last(is)-1), h(last(is)-2), Δ(last(is)-1), Δ(last(is)-2))
+        ds[begin] = _pchip_edge_derivative(
+            h(first(is)),
+            h(first(is) + 1),
+            Δ(first(is)),
+            Δ(first(is) + 1),
+        )
+        ds[end] = _pchip_edge_derivative(
+            h(last(is) - 1),
+            h(last(is) - 2),
+            Δ(last(is) - 1),
+            Δ(last(is) - 2),
+        )
     end
     return ds
 end
@@ -54,8 +65,10 @@ struct Interpolator{Xs,Ys,Ds}
     ds::Ds
 
     function Interpolator(xs::AbstractVector, ys::AbstractVector)
-        length(eachindex(xs, ys)) ≥ 2 || throw(ArgumentError("inputs must have at least 2 elements"))
-        _is_strictly_increasing(xs) || throw(ArgumentError("xs must be strictly increasing"))
+        length(eachindex(xs, ys)) ≥ 2 ||
+            throw(ArgumentError("inputs must have at least 2 elements"))
+        _is_strictly_increasing(xs) ||
+            throw(ArgumentError("xs must be strictly increasing"))
 
         ds = _pchip_ds_scipy(xs, ys)
 
@@ -63,8 +76,10 @@ struct Interpolator{Xs,Ys,Ds}
     end
 
     function Interpolator(xs::AbstractVector, ys::AbstractVector, ds::AbstractVector)
-        length(eachindex(xs, ys, ds)) ≥ 2 || throw(ArgumentError("inputs must have at least 2 elements"))
-        _is_strictly_increasing(xs) || throw(ArgumentError("xs must be strictly increasing"))
+        length(eachindex(xs, ys, ds)) ≥ 2 ||
+            throw(ArgumentError("inputs must have at least 2 elements"))
+        _is_strictly_increasing(xs) ||
+            throw(ArgumentError("xs must be strictly increasing"))
 
         new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds)
     end
@@ -103,7 +118,7 @@ end
         return imax - 1 # Treat right endpoint as part of rightmost interval
     end
 
-    i = imin + (imax - imin + 1)÷2
+    i = imin + (imax - imin + 1) ÷ 2
     while imin < imax
         if x < @inbounds xs[i]
             imax = i - 1
@@ -112,7 +127,7 @@ end
         else
             break
         end
-        i = imin + (imax - imin + 1)÷2
+        i = imin + (imax - imin + 1) ÷ 2
     end
 
     return i
@@ -177,10 +192,10 @@ function _evaluate(itp::Interpolator, x, i)
     d1 = _derivative(itp, Val(:begin), i)
     d2 = _derivative(itp, Val(:end), i)
 
-    return (y1 * _ϕ((x2-x)/h)
-           + y2 * _ϕ((x-x1)/h)
-           - d1*h * _ψ((x2-x)/h)
-           + d2*h * _ψ((x-x1)/h))
+    return (
+        y1 * _ϕ((x2 - x) / h) + y2 * _ϕ((x - x1) / h) - d1 * h * _ψ((x2 - x) / h) +
+        d2 * h * _ψ((x - x1) / h)
+    )
 end
 
 @inline _evaluate(itp::Interpolator, x) = _evaluate(itp, x, _findinterval(itp, x))
@@ -191,7 +206,9 @@ end
 @inline function _integrate(itp::Interpolator, a, b, i)
     a_ = _x(itp, a, i)
     b_ = _x(itp, b, i)
-    return (b_ - a_)/6*(_evaluate(itp, a, i) + 4*_evaluate(itp, (a_ + b_)/2, i) + _evaluate(itp, b, i)) # Simpson's rule
+    return (b_ - a_) / 6 * (
+        _evaluate(itp, a, i) + 4 * _evaluate(itp, (a_ + b_) / 2, i) + _evaluate(itp, b, i)
+    ) # Simpson's rule
 end
 
 @inline function _integrate(itp::Interpolator, a, b, i, j)
@@ -200,7 +217,7 @@ end
     end
 
     integral = _integrate(itp, a, Val(:end), i)
-    for k in i+1:j-1
+    for k = i+1:j-1
         integral += _integrate(itp, Val(:begin), Val(:end), k)
     end
     integral += _integrate(itp, Val(:begin), b, j)
