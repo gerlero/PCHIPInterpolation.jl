@@ -5,6 +5,7 @@ on:
       - main
     tags: ['*']
   pull_request:
+  workflow_dispatch:
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
@@ -21,6 +22,7 @@ jobs:
           - '1.6'
           - '1.7'
           - '1.8'
+          - '1.9'
           - '1'
           - 'nightly'
         os:
