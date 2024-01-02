@@ -1,6 +1,6 @@
 The PCHIPInterpolation.jl package is licensed under the Simplified "2-clause" BSD License:
 
-> Copyright (c) 2021-2023: Gabriel S. Gerlero.
+> Copyright (c) 2021-2024: Gabriel S. Gerlero.
 > All rights reserved.
 >
 > Copyright (c) 2017: mattias slabanja.
