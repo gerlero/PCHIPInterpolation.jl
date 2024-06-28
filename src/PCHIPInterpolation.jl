@@ -63,8 +63,9 @@ struct Interpolator{Xs,Ys,Ds}
     xs::Xs
     ys::Ys
     ds::Ds
+    extrapolate::Bool
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector)
+    function Interpolator(xs::AbstractVector, ys::AbstractVector; extrapolate::Bool = false)
         length(eachindex(xs, ys)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||
@@ -72,16 +73,16 @@ struct Interpolator{Xs,Ys,Ds}
 
         ds = _pchip_ds_scipy(xs, ys)
 
-        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds)
+        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds, extrapolate)
     end
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector, ds::AbstractVector)
+    function Interpolator(xs::AbstractVector, ys::AbstractVector, ds::AbstractVector; extrapolate::Bool = false)
         length(eachindex(xs, ys, ds)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||
             throw(ArgumentError("xs must be strictly increasing"))
 
-        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds)
+        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds, extrapolate)
     end
 end
 
@@ -97,6 +98,9 @@ end
         i -= 1 # Treat right endpoint as part of rightmost interval
     end
 
+    i < firstindex(xs) && return (firstindex(xs))
+    i > lastindex(xs) && return (lastindex(xs)-1)
+    
     return i
 end
 
@@ -106,7 +110,8 @@ end
     imin = firstindex(xs)
 
     if x < @inbounds xs[imin]
-        return imin - 1
+        # use leftmost interval for extrapolation
+        return imin 
     end
 
     imax = lastindex(xs)
@@ -140,39 +145,39 @@ end
 @inline _x(::Interpolator, x) = x
 @inline _x(itp::Interpolator, x, _) = _x(itp, x)
 @inline function _x(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.xs) || i >= lastindex(itp.xs)
+    if (i < firstindex(itp.xs) || i >= lastindex(itp.xs)) && !itp.extrapolate
         return float(eltype(itp.xs))(NaN)
     end
     return @inbounds itp.xs[i]
 end
 @inline function _x(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.xs) || i >= lastindex(itp.xs)
+    if (i < firstindex(itp.xs) || i >= lastindex(itp.xs)) && !itp.extrapolate
         return float(eltype(itp.xs))(NaN)
     end
     return @inbounds itp.xs[i+1]
 end
 
 @inline function _evaluate(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.ys) || i >= lastindex(itp.ys)
+    if (i < firstindex(itp.ys) || i >= lastindex(itp.ys)) && !itp.extrapolate
         return float(eltype(itp.ys))(NaN)
     end
     return @inbounds itp.ys[i]
 end
 @inline function _evaluate(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.ys) || i >= lastindex(itp.ys)
+    if i < firstindex(itp.ys) || i >= lastindex(itp.ys) && !itp.extrapolate
         return float(eltype(itp.ys))(NaN)
     end
     return @inbounds itp.ys[i+1]
 end
 
 @inline function _derivative(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.ds) || i >= lastindex(itp.ds)
+    if (i < firstindex(itp.ds) || i >= lastindex(itp.ds)) && !itp.extrapolate
         return float(eltype(itp.ds))(NaN)
     end
     return @inbounds itp.ds[i]
 end
 @inline function _derivative(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.ds) || i >= lastindex(itp.ds)
+    if (i < firstindex(itp.ds) || i >= lastindex(itp.ds)) && !itp.extrapolate
         return float(eltype(itp.ds))(NaN)
     end
     return @inbounds itp.ds[i+1]
