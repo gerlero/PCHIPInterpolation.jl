@@ -8,8 +8,8 @@ using RecipesBase
         markershape := :none
         plotdensity = clamp(10 * length(itp.xs), 1000, 100000)
         if itp.extrapolate
-            Δxs = maximum(diff(itp.xs))
-            x = range(first(itp.xs) - 2Δxs, last(itp.xs) + 2Δxs, length=plotdensity)
+            Δxs = maximum(diff(itp.xs)) / 2
+            x = range(first(itp.xs) - Δxs, last(itp.xs) + Δxs, length=plotdensity)
         else
             x = range(first(itp.xs), last(itp.xs), length=plotdensity)
         end
