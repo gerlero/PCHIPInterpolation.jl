@@ -66,7 +66,7 @@ struct Interpolator{Xs,Ys,Ds}
     ds::Ds
     extrapolate::Bool
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector; extrapolate::Bool=false)
+    function Interpolator(xs::AbstractVector, ys::AbstractVector; extrapolate::Bool = false)
         length(eachindex(xs, ys)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||
@@ -77,7 +77,12 @@ struct Interpolator{Xs,Ys,Ds}
         new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds, extrapolate)
     end
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector, ds::AbstractVector; extrapolate::Bool=false)
+    function Interpolator(
+        xs::AbstractVector,
+        ys::AbstractVector,
+        ds::AbstractVector;
+        extrapolate::Bool = false,
+    )
         length(eachindex(xs, ys, ds)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||

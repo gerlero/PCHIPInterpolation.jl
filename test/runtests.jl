@@ -15,9 +15,9 @@ function is_monotone(ys)
     )
 end
 
-function is_piecewise_monotone(itp::Interpolator, N=10000)
+function is_piecewise_monotone(itp::Interpolator, N = 10000)
     for i in eachindex(itp.xs)[begin:end-1]
-        xsi = range(itp.xs[i], stop=itp.xs[i+1], length=N)
+        xsi = range(itp.xs[i], stop = itp.xs[i+1], length = N)
         ysi = itp.(xsi)
 
         @assert first(ysi) == itp.ys[i]
@@ -104,7 +104,7 @@ end
             ys = [-100.0, 1.2, 1.1]
             @test is_piecewise_monotone(@inferred Interpolator(xs, ys))
 
-            xs = range(0, stop=2π, length=5000)
+            xs = range(0, stop = 2π, length = 5000)
             ys = sin.(xs)
             @test is_piecewise_monotone(@inferred Interpolator(xs, ys))
             @test is_piecewise_monotone(@inferred Interpolator(collect(xs), ys))
@@ -277,7 +277,11 @@ end
     end
 
     @testset "extrapolate" begin
-        itp = @inferred Interpolator([-2.0, -1, 0, 1, 2], [1.0, 0, 0, 0, 1]; extrapolate=true)
+        itp = @inferred Interpolator(
+            [-2.0, -1, 0, 1, 2],
+            [1.0, 0, 0, 0, 1];
+            extrapolate = true,
+        )
         @test itp(-3) ≈ 2
         @test itp(4) ≈ 0
     end
@@ -314,7 +318,7 @@ end
         ys = [2.0, 2.1, 1.0, 0.0, 0.0, 3.0]
         itp = @inferred Interpolator(xs, ys)
         plot(itp)
-        plot(itp, markershape=:auto)
+        plot(itp, markershape = :auto)
     end
 
     @testset "OffsetArrays" begin
@@ -361,13 +365,13 @@ end
     @testset "regression tests" begin
         @testset "gh-8" begin
             # Regression test for https://github.com/gerlero/PCHIPInterpolation.jl/issues/8
-            x = collect(range(0, stop=1, length=24))
+            x = collect(range(0, stop = 1, length = 24))
             itp = Interpolator(x, x)
             @test itp(1) == 1
-            x = collect(range(0, stop=1, length=25))
+            x = collect(range(0, stop = 1, length = 25))
             itp = Interpolator(x, x)
             @test itp(1) == 1
-            x = collect(range(0, stop=1, length=100))
+            x = collect(range(0, stop = 1, length = 100))
             itp = Interpolator(x, x)
             @test itp(1) == 1
         end
