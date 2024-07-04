@@ -44,11 +44,27 @@ ys = itp.(xs) # At multiple points
 using Plots
 
 plot(itp, markers=true, label="PCHIP")
+
 ```
 
-![Plot](example.png)
+![Plot](/images/example.png)
 
 The monotonicity-preserving property of PCHIP interpolation can be clearly seen in the plot.
+
+
+### Extrapolations
+
+We can also using the cubic polynomial at the first and last intervals to extrapolate values outside the domain of `itp.xs` by setting `itp.extrapolate = true` (default is false) or in the constructor:
+```jl
+itp = Interpolator(xs, ys; extrapolate = true)
+```
+
+If `extrapolate = true` then plotting the iterpolator will also show extrapolated values, extending the plotted domain by `± maximum(diff(itp.xs)) * 0.5`:
+
+```julia
+plot(itp,markers=true, label="PCHIP w/ extrapolation")
+```
+![Plot with extrapolation](/images/example_extrapolate.svg)
 
 ### Compute a definite integral
 
