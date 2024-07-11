@@ -54,7 +54,7 @@ The monotonicity-preserving property of PCHIP interpolation can be clearly seen 
 
 ### Extrapolations
 
-We can also using the cubic polynomial at the first and last intervals to extrapolate values outside the domain of `itp.xs` by setting `itp.extrapolate = true` (default is false) or in the constructor:
+We can also using the cubic polynomial at the first and last intervals to extrapolate values outside the domain of `itp.xs` by setting `itp.extrapolate = true` (default is false) in the constructor:
 ```jl
 itp = Interpolator(xs, ys; extrapolate = true)
 ```

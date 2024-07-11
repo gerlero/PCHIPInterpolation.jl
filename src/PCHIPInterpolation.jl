@@ -22,7 +22,7 @@ function _pchip_ds_scipy(xs::AbstractVector, ys::AbstractVector)
     Δ(i) = (ys[i+1] - ys[i]) / h(i)
 
     length(ys) != length(xs) && throw(DimensionMismatch)
-    ds = similar(ys)
+    ds = similar(ys ./ xs)
 
     is = eachindex(xs, ys, ds)
 

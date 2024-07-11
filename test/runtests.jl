@@ -319,6 +319,9 @@ end
         itp = @inferred Interpolator(xs, ys)
         plot(itp)
         plot(itp, markershape = :auto)
+
+        itp = @inferred Interpolator(xs, ys; extrapolate = true)
+        plot(itp, markershape = :auto)
     end
 
     @testset "OffsetArrays" begin
