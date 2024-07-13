@@ -21,6 +21,7 @@ function _pchip_ds_scipy(xs::AbstractVector, ys::AbstractVector)
     h(i) = xs[i+1] - xs[i]
     Δ(i) = (ys[i+1] - ys[i]) / h(i)
 
+    length(ys) != length(xs) && throw(DimensionMismatch)
     ds = similar(ys ./ xs)
 
     is = eachindex(xs, ys, ds)
@@ -63,8 +64,9 @@ struct Interpolator{Xs,Ys,Ds}
     xs::Xs
     ys::Ys
     ds::Ds
+    extrapolate::Bool
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector)
+    function Interpolator(xs::AbstractVector, ys::AbstractVector; extrapolate::Bool = false)
         length(eachindex(xs, ys)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||
@@ -72,16 +74,21 @@ struct Interpolator{Xs,Ys,Ds}
 
         ds = _pchip_ds_scipy(xs, ys)
 
-        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds)
+        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds, extrapolate)
     end
 
-    function Interpolator(xs::AbstractVector, ys::AbstractVector, ds::AbstractVector)
+    function Interpolator(
+        xs::AbstractVector,
+        ys::AbstractVector,
+        ds::AbstractVector;
+        extrapolate::Bool = false,
+    )
         length(eachindex(xs, ys, ds)) ≥ 2 ||
             throw(ArgumentError("inputs must have at least 2 elements"))
         _is_strictly_increasing(xs) ||
             throw(ArgumentError("xs must be strictly increasing"))
 
-        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds)
+        new{typeof(xs),typeof(ys),typeof(ds)}(xs, ys, ds, extrapolate)
     end
 end
 
@@ -139,49 +146,29 @@ end
 
 @inline _x(::Interpolator, x) = x
 @inline _x(itp::Interpolator, x, _) = _x(itp, x)
-@inline function _x(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.xs) || i >= lastindex(itp.xs)
-        return float(eltype(itp.xs))(NaN)
-    end
-    return @inbounds itp.xs[i]
-end
-@inline function _x(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.xs) || i >= lastindex(itp.xs)
-        return float(eltype(itp.xs))(NaN)
-    end
-    return @inbounds itp.xs[i+1]
-end
+@inline _x(itp::Interpolator, ::Val{:begin}, i) = @inbounds itp.xs[i]
+@inline _x(itp::Interpolator, ::Val{:end}, i) = @inbounds itp.xs[i+1]
 
-@inline function _evaluate(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.ys) || i >= lastindex(itp.ys)
-        return float(eltype(itp.ys))(NaN)
-    end
-    return @inbounds itp.ys[i]
-end
-@inline function _evaluate(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.ys) || i >= lastindex(itp.ys)
-        return float(eltype(itp.ys))(NaN)
-    end
-    return @inbounds itp.ys[i+1]
-end
+@inline _evaluate(itp::Interpolator, ::Val{:begin}, i) = @inbounds itp.ys[i]
+@inline _evaluate(itp::Interpolator, ::Val{:end}, i) = @inbounds itp.ys[i+1]
+@inline _derivative(itp::Interpolator, ::Val{:begin}, i) = @inbounds itp.ds[i]
+@inline _derivative(itp::Interpolator, ::Val{:end}, i) = @inbounds itp.ds[i+1]
 
-@inline function _derivative(itp::Interpolator, ::Val{:begin}, i)
-    if i < firstindex(itp.ds) || i >= lastindex(itp.ds)
-        return float(eltype(itp.ds))(NaN)
-    end
-    return @inbounds itp.ds[i]
-end
-@inline function _derivative(itp::Interpolator, ::Val{:end}, i)
-    if i < firstindex(itp.ds) || i >= lastindex(itp.ds)
-        return float(eltype(itp.ds))(NaN)
-    end
-    return @inbounds itp.ds[i+1]
-end
 
 @inline _ϕ(t) = 3t^2 - 2t^3
 @inline _ψ(t) = t^3 - t^2
 
 function _evaluate(itp::Interpolator, x, i)
+    if itp.extrapolate
+        if i < firstindex(itp.xs)
+            i = firstindex(itp.xs)
+        elseif i >= lastindex(itp.xs)
+            i = lastindex(itp.xs) - 1
+        end
+    elseif i < firstindex(itp.xs) || i >= lastindex(itp.xs)
+        return float(eltype(itp.xs))(NaN)
+    end
+
     x1 = _x(itp, Val(:begin), i)
     x2 = _x(itp, Val(:end), i)
     h = x2 - x1
@@ -204,6 +191,10 @@ end
 
 
 @inline function _integrate(itp::Interpolator, a, b, i)
+    if !itp.extrapolate && (i < firstindex(itp.xs) || i >= lastindex(itp.xs))
+        return float(eltype(itp.xs))(NaN)
+    end
+
     a_ = _x(itp, a, i)
     b_ = _x(itp, b, i)
     return (b_ - a_) / 6 * (
