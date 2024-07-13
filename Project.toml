@@ -1,7 +1,7 @@
 name = "PCHIPInterpolation"
 uuid = "afe20452-48d1-4729-9a8b-50fb251f06cd"
 authors = ["Gabriel S. Gerlero <ggerlero@cimec.unl.edu.ar>", "Pablo A. Kler"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
