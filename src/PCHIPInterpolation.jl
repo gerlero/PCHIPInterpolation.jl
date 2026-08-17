@@ -228,6 +228,7 @@ end
 
 
 if !isdefined(Base, :get_extension) # For compatibility with Julia < 1.9
+    include("../ext/PCHIPInterpolationForwardDiffExt.jl")
     include("../ext/PCHIPInterpolationRecipesBaseExt.jl")
 end
 
