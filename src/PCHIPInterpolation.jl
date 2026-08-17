@@ -96,8 +96,6 @@ end
 @inline function _findinterval_base(xs::AbstractVector, x) # Generic binary search from Julia Base
     @boundscheck length(xs) ≥ 2 || throw(BoundsError(xs))
 
-    VERSION < v"1.6.2" && isnan(x) && return lastindex(xs) - 1
-
     i = searchsortedlast(xs, x)
 
     if i == lastindex(xs) && x == @inbounds xs[i]
@@ -225,11 +223,5 @@ end
 end
 
 @inline integrate(itp::Interpolator, a::Number, b::Number) = _integrate(itp, a, b)
-
-
-if !isdefined(Base, :get_extension) # For compatibility with Julia < 1.9
-    include("../ext/PCHIPInterpolationForwardDiffExt.jl")
-    include("../ext/PCHIPInterpolationRecipesBaseExt.jl")
-end
 
 end
