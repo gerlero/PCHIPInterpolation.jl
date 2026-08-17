@@ -4,12 +4,15 @@ authors = ["Gabriel S. Gerlero <ggerlero@cimec.unl.edu.ar>", "Pablo A. Kler"]
 version = "0.2.1"
 
 [deps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [weakdeps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [extensions]
+PCHIPInterpolationForwardDiffExt = "ForwardDiff"
 PCHIPInterpolationRecipesBaseExt = "RecipesBase"
 
 [compat]
