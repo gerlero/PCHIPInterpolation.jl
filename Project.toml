@@ -16,6 +16,7 @@ PCHIPInterpolationForwardDiffExt = "ForwardDiff"
 PCHIPInterpolationRecipesBaseExt = "RecipesBase"
 
 [compat]
+ForwardDiff = "0.10, 1"
 RecipesBase = "1"
 julia = "1.6"
 
