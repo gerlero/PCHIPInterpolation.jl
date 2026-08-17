@@ -4,7 +4,7 @@ export Interpolator, integrate
 
 
 _is_strictly_increasing(xs::AbstractVector) =
-    all(a < b for (a, b) in zip(xs[begin:end-1], xs[begin+1:end]))
+    all(a < b for (a, b) in zip(xs[begin:(end-1)], xs[(begin+1):end]))
 _is_strictly_increasing(xs::AbstractRange) = step(xs) > 0
 
 function _pchip_edge_derivative(h1, h2, Δ1, Δ2)
@@ -31,7 +31,7 @@ function _pchip_ds_scipy(xs::AbstractVector, ys::AbstractVector)
     else
         Δl = Δ(first(is))
         hl = h(first(is))
-        for i in is[begin+1:end-1]
+        for i in is[(begin+1):(end-1)]
             Δr = Δ(i)
             hr = h(i)
             if sign(Δl) != sign(Δr) || Δl ≈ zero(Δl) || Δr ≈ zero(Δr)
@@ -208,7 +208,7 @@ end
     end
 
     integral = _integrate(itp, a, Val(:end), i)
-    for k = i+1:j-1
+    for k = (i+1):(j-1)
         integral += _integrate(itp, Val(:begin), Val(:end), k)
     end
     integral += _integrate(itp, Val(:begin), b, j)

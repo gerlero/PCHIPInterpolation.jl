@@ -11,12 +11,12 @@ function is_monotone(ys)
     direction = first(ys) ≈ last(ys) ? 0 : sign(last(ys) - first(ys))
     return all(
         ya ≈ yb || sign(yb - ya) == direction for
-        (ya, yb) in zip(ys[begin:end-1], ys[begin+1:end])
+        (ya, yb) in zip(ys[begin:(end-1)], ys[(begin+1):end])
     )
 end
 
 function is_piecewise_monotone(itp::Interpolator, N = 10000)
-    for i in eachindex(itp.xs)[begin:end-1]
+    for i in eachindex(itp.xs)[begin:(end-1)]
         xsi = range(itp.xs[i], stop = itp.xs[i+1], length = N)
         ysi = itp.(xsi)
 
@@ -150,7 +150,7 @@ end
             ys = [2.0, 2.1, 1.0, 0.0, 0.0, 3.0]
             itp = @inferred Interpolator(xs, ys)
 
-            for x in xs[begin+1:end-1]
+            for x in xs[(begin+1):(end-1)]
                 y = @inferred itp(x)
                 @test (@inferred itp(x - eps(x))) ≈ y atol = 1e-12
                 @test (@inferred itp(x + eps(x))) ≈ y atol = 1e-12
@@ -260,7 +260,7 @@ end
             ys = [2.0, 2.1, 1.0, 0.0, 0.0, 3.0]
             itp = Interpolator(xs, ys)
 
-            for x in xs[begin+1:end-1]
+            for x in xs[(begin+1):(end-1)]
                 d = @inferred derivative(itp, x)
                 @test (@inferred derivative(itp, x - eps(x))) ≈ d atol = 1e-12
                 @test (@inferred derivative(itp, x + eps(x))) ≈ d atol = 1e-12
